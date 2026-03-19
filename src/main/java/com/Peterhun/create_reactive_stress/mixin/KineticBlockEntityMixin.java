@@ -106,7 +106,7 @@ public abstract class KineticBlockEntityMixin {
         if (getOrCreateNetwork() != null) {
             float impact = calculateStressApplied();
 
-            if (Math.abs(impact - lastStressApplied) <= 1e-4f) {
+            if (Math.abs(impact - lastStressApplied) > 1e-4f) {
                 lastStressApplied = impact;
                 getOrCreateNetwork().updateStressFor(self, impact);
                 self.setChanged();
@@ -118,9 +118,6 @@ public abstract class KineticBlockEntityMixin {
 
     @Shadow
     protected boolean overStressed;
-
-    @Shadow
-    protected abstract void addStressImpactStats(List<Component> tooltip, float stressAtBase);
 
     @Shadow
     public abstract float getTheoreticalSpeed();
@@ -172,10 +169,11 @@ public abstract class KineticBlockEntityMixin {
     @Inject(method = "addToGoggleTooltip", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/kinetics/base/KineticBlockEntity;addStressImpactStats(Ljava/util/List;F)V", shift = At.Shift.AFTER))
     public void addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking, CallbackInfoReturnable<Boolean> cir, @Local(name = "stressAtBase") float stressAtBase) {
         KineticBlockEntity self = (KineticBlockEntity)(Object)this;
-        double maxStressAtBase =  createReactiveStress$DynamicConfigRead(self);
+        float baseImpact = (float) BlockStressValues.getImpact(self.getBlockState().getBlock());
+        double maxStressAtBase =  (baseImpact * createReactiveStress$DynamicConfigRead(self));
         if (this.speed==0) return;
-        if (maxStressAtBase != 1){
-            createReactiveStress$addStressImpactStats(tooltip,(float)(maxStressAtBase * stressAtBase));
+        if (Math.abs(maxStressAtBase - stressAtBase)>1e-4){
+            createReactiveStress$addStressImpactStats(tooltip,(float)maxStressAtBase);
         }
     }
 
