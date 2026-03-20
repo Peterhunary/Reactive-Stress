@@ -1,8 +1,12 @@
 package com.Peterhun.create_reactive_stress;
 
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import net.minecraftforge.common.ForgeConfigSpec;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.Peterhun.create_reactive_stress.CRSManager.getKeyList;
+import static com.Peterhun.create_reactive_stress.CRSManager.getMultiplierList;
 
 public final class Config {
 
@@ -19,6 +23,13 @@ public final class Config {
         addMultiplier(builder, "MillStone", 2.0);
         addMultiplier(builder, "Saw", 2.0);
         addMultiplier(builder, "CrushingWheel", 3.0);
+
+        //API implementation
+        if (!(getKeyList().isEmpty())) {
+            for (KineticBlockEntity key : getKeyList()) {
+                addMultiplier(builder, key.toString(), getMultiplierList(key));
+            }
+        }
 
         builder.pop();
 
