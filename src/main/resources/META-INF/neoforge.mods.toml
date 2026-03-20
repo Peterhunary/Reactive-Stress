@@ -4,7 +4,7 @@ license="MIT"
 
 [[mods]]
 modId="create_reactive_stress"
-version="1.0.2"
+version="1.0.3"
 displayName="Create: Reactive Stress"
 description='Addon mod to adjust Create mod stress calculations based on machine activity.'
 authors="Peterhun"
