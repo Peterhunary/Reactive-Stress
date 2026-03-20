@@ -31,12 +31,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
+import static com.Peterhun.create_reactive_stress.CRSManager.*;
+import static com.Peterhun.create_reactive_stress.Config.MULTIPLIERS;
 import static com.Peterhun.create_reactive_stress.CreateReactiveStress.MODID;
 import static net.minecraft.ChatFormatting.GRAY;
 
 
 @Mixin(KineticBlockEntity.class)
-public abstract class KineticBlockEntityMixin {
+public abstract class KineticBlockEntityMixin{
 
     @Shadow protected float lastStressApplied;
 
@@ -82,6 +84,16 @@ public abstract class KineticBlockEntityMixin {
         if (be instanceof CrushingWheelBlockEntity wheel && createReactiveStress$containsEntityAnyController(wheel)){
             return  UtilityHelperClass.createReactiveStress$valueCrushingWheel;
         }
+        //API implementation
+        if(isContainKeys(be) && isWorking(be)) {
+            KineticBlockEntity kbe = null;
+            if (isContainKeys(be)) {
+                kbe = be;
+            }
+            assert kbe != null;
+            return MULTIPLIERS.get(kbe.toString()).get();
+        }
+
         return 1.0;
     }
 
@@ -162,7 +174,16 @@ public abstract class KineticBlockEntityMixin {
         if (be instanceof CrushingWheelBlockEntity){
             return  UtilityHelperClass.createReactiveStress$valueCrushingWheel;
         }
-        return 1.0;
+        //API implementation
+        if(isContainKeys(be)) {
+            KineticBlockEntity kbe = null;
+            if (isContainKeys(be)) {
+                kbe = be;
+            }
+            assert kbe != null;
+            return MULTIPLIERS.get(kbe.toString()).get();
+        }
+        return 1.0f;
     }
 
     @Unique

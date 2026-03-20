@@ -1,15 +1,19 @@
 package com.Peterhun.create_reactive_stress;
 
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.Peterhun.create_reactive_stress.CRSManager.getKeyList;
+import static com.Peterhun.create_reactive_stress.CRSManager.getMultiplierList;
+
+
 public final class Config {
 
     public static final ModConfigSpec SPEC;
     public static final Map<String, ModConfigSpec.ConfigValue<Double>> MULTIPLIERS = new HashMap<>();
-
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -21,6 +25,9 @@ public final class Config {
         addMultiplier(builder, "MillStone", 2.0);
         addMultiplier(builder, "Saw", 2.0);
         addMultiplier(builder, "CrushingWheel", 3);
+
+        //API implementation
+        addMultiplier(builder,getKeyList().toString(),getMultiplierList((KineticBlockEntity) getKeyList()));
 
         builder.pop();
 
