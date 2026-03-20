@@ -27,7 +27,12 @@ public final class Config {
         addMultiplier(builder, "CrushingWheel", 3);
 
         //API implementation
-        addMultiplier(builder,getKeyList().toString(),getMultiplierList((KineticBlockEntity) getKeyList()));
+        if (!(getKeyList().isEmpty())) {
+            for (KineticBlockEntity key : getKeyList()) {
+                addMultiplier(builder, key.toString(), getMultiplierList(key));
+            }
+        }
+
 
         builder.pop();
 

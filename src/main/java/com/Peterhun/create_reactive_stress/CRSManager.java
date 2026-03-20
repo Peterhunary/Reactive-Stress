@@ -25,10 +25,6 @@ public class CRSManager implements ICRSAPI {
         return dataMap.getOrDefault(kbe, new CRSData(false, 2.0f)).multiplier();
     }
 
-    public static boolean isContainKeys(KineticBlockEntity be) {
-        return dataMap.containsKey(be);
-    }
-
     public static Set<KineticBlockEntity> getKeyList(){
         return dataMap.keySet();
     }

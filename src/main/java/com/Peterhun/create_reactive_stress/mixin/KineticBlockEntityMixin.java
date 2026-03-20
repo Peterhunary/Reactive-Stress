@@ -85,13 +85,12 @@ public abstract class KineticBlockEntityMixin{
             return  UtilityHelperClass.createReactiveStress$valueCrushingWheel;
         }
         //API implementation
-        if(isContainKeys(be) && isWorking(be)) {
-            KineticBlockEntity kbe = null;
-            if (isContainKeys(be)) {
-                kbe = be;
+        if (!(getKeyList().isEmpty())) {
+            for (KineticBlockEntity key : getKeyList()) {
+                if(be.equals(key) && isWorking(key)){
+                    return MULTIPLIERS.get(key.toString()).get();
+                }
             }
-            assert kbe != null;
-            return MULTIPLIERS.get(kbe.toString()).get();
         }
 
         return 1.0;
@@ -175,13 +174,12 @@ public abstract class KineticBlockEntityMixin{
             return  UtilityHelperClass.createReactiveStress$valueCrushingWheel;
         }
         //API implementation
-        if(isContainKeys(be)) {
-            KineticBlockEntity kbe = null;
-            if (isContainKeys(be)) {
-                kbe = be;
+        if (!(getKeyList().isEmpty())) {
+            for (KineticBlockEntity key : getKeyList()) {
+                if(be.equals(key) && isWorking(key)){
+                    return MULTIPLIERS.get(key.toString()).get();
+                }
             }
-            assert kbe != null;
-            return MULTIPLIERS.get(kbe.toString()).get();
         }
         return 1.0f;
     }
