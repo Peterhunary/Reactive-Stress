@@ -12,6 +12,8 @@ public final class Config {
 
     public static final ForgeConfigSpec SPEC;
     public static final Map<String, ForgeConfigSpec.DoubleValue> MULTIPLIERS = new HashMap<>();
+    public static final Map<String, ForgeConfigSpec.ConfigValue<Double>> SCALINGMULT = new HashMap<>();
+    public static final Map<String, ForgeConfigSpec.ConfigValue<Boolean>> ISTRUE = new HashMap<>();
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -31,6 +33,11 @@ public final class Config {
             }
         }
 
+        //Scaling configs
+        addScaling(builder,"ScaleCOEF",0.2);
+        addBoolean(builder,"Scaling",true);
+
+
         builder.pop();
 
         SPEC = builder.build();
@@ -42,5 +49,19 @@ public final class Config {
                 .defineInRange(key, defaultValue, 1.0, 100.0);
 
         MULTIPLIERS.put(key, value);
+    }
+    private static void addScaling(ForgeConfigSpec.Builder builder, String key, double defaultValue) {
+        ForgeConfigSpec.ConfigValue<Double> value =
+                builder.comment("Scaling thresholds for " + key + " calculations")
+                        .defineInRange(key, defaultValue, 0.01,10.0);
+
+        SCALINGMULT.put(key, value);
+    }
+    private static void addBoolean(ForgeConfigSpec.Builder builder, String key, Boolean defaultValue) {
+        ForgeConfigSpec.ConfigValue<Boolean> value =
+                builder.comment("Toggle " + key + " for Disable/Enable")
+                        .define(key, defaultValue);
+
+        ISTRUE.put(key, value);
     }
 }

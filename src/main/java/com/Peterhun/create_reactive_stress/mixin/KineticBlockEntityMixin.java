@@ -1,6 +1,7 @@
 package com.Peterhun.create_reactive_stress.mixin;
 
 import com.Peterhun.create_reactive_stress.UtilityHelperClass;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.KineticNetwork;
@@ -21,7 +22,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,7 +33,7 @@ import java.util.List;
 
 import static com.Peterhun.create_reactive_stress.CRSManager.getKeyList;
 import static com.Peterhun.create_reactive_stress.CRSManager.isWorking;
-import static com.Peterhun.create_reactive_stress.Config.MULTIPLIERS;
+import static com.Peterhun.create_reactive_stress.Config.*;
 import static com.Peterhun.create_reactive_stress.Create_reactive_stress.MODID;
 import static net.minecraft.ChatFormatting.GRAY;
 
@@ -51,12 +51,24 @@ public abstract class KineticBlockEntityMixin {
      * @reason new math
      */
 
-    @Overwrite
-    public float calculateStressApplied() {
-        KineticBlockEntity self = (KineticBlockEntity)(Object)this;
-        float baseImpact = (float) BlockStressValues.getImpact(self.getBlockState().getBlock());
+    @ModifyReturnValue(method = "calculateStressApplied", at = @At("RETURN"))
+    public float calculateStressApplied(float original) {
+        return (float) ((original + createReactiveStress$CalculateNetworkScaling())
+                * createReactiveStress$GetConfig((KineticBlockEntity)(Object)this));
+    }
 
-        return (float) (baseImpact * createReactiveStress$GetConfig(self));
+
+    @Unique
+    private double createReactiveStress$scaleCoef = SCALINGMULT.get("ScaleCOEF").get();
+
+
+
+    @Unique
+    public float createReactiveStress$CalculateNetworkScaling() {
+        float gradualScaling = (float)createReactiveStress$scaleCoef*
+                (Math.abs((float)(Math.sqrt(this.networkSize)*0.1+1)-(float)Math.sqrt((this.capacity*0.66 )/(this.networkSize*100)))+1);
+
+        return (ISTRUE.get("Scaling").get() ? gradualScaling : 1f);
     }
 
 
@@ -118,7 +130,7 @@ public abstract class KineticBlockEntityMixin {
         if (getOrCreateNetwork() != null) {
             float impact = calculateStressApplied();
 
-            if (Math.abs(impact - lastStressApplied) > 1e-6f) {
+            if (Math.abs(impact - lastStressApplied) > 1e-4f) {
                 lastStressApplied = impact;
                 getOrCreateNetwork().updateStressFor(self, impact);
                 self.setChanged();
@@ -136,6 +148,15 @@ public abstract class KineticBlockEntityMixin {
 
     @Shadow
     protected float speed;
+
+    @Shadow
+    public abstract float calculateStressApplied();
+
+    @Shadow
+    private int networkSize;
+
+    @Shadow
+    protected float capacity;
 
     @Unique
     private static boolean createReactiveStress$containsEntityAnyController(CrushingWheelBlockEntity be) {
@@ -190,10 +211,11 @@ public abstract class KineticBlockEntityMixin {
     public void addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking, CallbackInfoReturnable<Boolean> cir, @Local(name = "stressAtBase") float stressAtBase) {
         KineticBlockEntity self = (KineticBlockEntity)(Object)this;
         float baseImpact = (float) BlockStressValues.getImpact(self.getBlockState().getBlock());
-        double maxStressAtBase =  (baseImpact * createReactiveStress$DynamicConfigRead(self));
+        double maxStressAtBase =  ((baseImpact + createReactiveStress$CalculateNetworkScaling())*createReactiveStress$DynamicConfigRead(self));
         if (this.speed==0) return;
         if (Math.abs(maxStressAtBase - stressAtBase)>1e-4){
             createReactiveStress$addStressImpactStats(tooltip,(float)maxStressAtBase);
+            createReactiveStress$addStressScaleStats(tooltip);
         }
     }
 
@@ -207,6 +229,20 @@ public abstract class KineticBlockEntityMixin {
                 .style(ChatFormatting.AQUA)
                 .space()
                 .add(CreateLang.translate("gui.goggles.at_current_speed")
+                        .style(ChatFormatting.DARK_GRAY))
+                .forGoggles(tooltip, 1);
+    }
+
+
+    @Unique
+    protected void createReactiveStress$addStressScaleStats(List<Component> tooltip) {
+        new LangBuilder(MODID).translate("tooltip.scaleImpactStatus").style(GRAY).forGoggles(tooltip);
+
+        CreateLang.number(createReactiveStress$CalculateNetworkScaling())
+                .translate("generic.unit.stress")
+                .style(ChatFormatting.AQUA)
+                .space()
+                .add(CreateLang.text("/rpm")
                         .style(ChatFormatting.DARK_GRAY))
                 .forGoggles(tooltip, 1);
     }
